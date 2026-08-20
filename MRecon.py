@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-M-Recon v14.3
+M-Recon v15.0
 Protocol-aware reconnaissance scanner for authorized security testing.
 
 Focus:
@@ -78,7 +78,7 @@ except ImportError:
     CRYPTO_AVAILABLE = False
 
 console = Console()
-USER_AGENT = "M-Recon/14.2"
+USER_AGENT = "M-Recon/15.0"
 
 DEFAULT_HTTP_PORTS = {80, 3000, 5000, 8000, 8001, 8008, 8080, 8081, 8888, 18080}
 DEFAULT_HTTPS_PORTS = {443, 8443, 9443}
@@ -828,7 +828,7 @@ class MReconScanner:
             f"[bold green]Addresses:[/bold green] {len(self.addresses)}\n"
             f"[bold green]Scan:[/bold green] {scan_type}\n"
             f"[bold green]Workers:[/bold green] {self.max_threads} | [bold green]Jobs:[/bold green] {len(scan_jobs)}",
-            title="[bold cyan]M-Recon v14.3[/bold cyan]", expand=False
+            title="[bold cyan]M-Recon v15.0[/bold cyan]", expand=False
         ))
         progress = None
         task_id = None
@@ -854,15 +854,13 @@ class MReconScanner:
         duration = round(time.monotonic() - scan_start, 2)
         self.print_results()
         report = self.build_report(ports, scan_type, duration)
-        if output_file:
-            save_report(output_file, self, report)
         return report
 
     def build_report(self, ports: list[int], scan_type: str, duration: float) -> dict:
         results = [asdict(x) for x in sorted(self.results, key=lambda r: (r.target_ip, r.port, r.protocol))]
         return {
             "tool": "M-Recon",
-            "version": "14.2",
+            "version": "14.4",
             "target": self.target_host,
             "addresses": [{"family": self.family_label(f), "ip": ip} for f, ip in self.addresses],
             "os_guess": self.os_info,
@@ -1167,7 +1165,7 @@ def run_scan(args) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="M-Recon v14.3")
+    p = argparse.ArgumentParser(description="M-Recon v15.0")
     p.add_argument("-t", "--target", required=True, help="Hostname, IP, CIDR, IP range, or @targets.txt")
     p.add_argument("-p", "--ports", default="1-1024")
     p.add_argument("-w", "--workers", type=int, default=None)
@@ -1186,7 +1184,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--config")
     p.add_argument("--profile", choices=["fast", "balanced", "deep"], default=None)
     p.add_argument("-o", "--output")
-    p.add_argument("--version", action="version", version="M-Recon 14.3")
+    p.add_argument("--version", action="version", version="M-Recon 15.0")
     return p
 
 
@@ -1207,7 +1205,7 @@ def main() -> int:
 
 
 # -----------------------------------------------------------------------------
-# M-Recon v14.3 Terminal UI
+# M-Recon v15.0 Terminal UI
 # Terminal/TUI only: Rich banner, panels, tables, progress, interactive shell.
 # No desktop GUI dependencies are used.
 # -----------------------------------------------------------------------------
@@ -1221,52 +1219,56 @@ BANNER = """[bold cyan]
 ██║ ╚═╝ ██║██║ ╚████║██║  ██║███████╗╚██████╗╚██████╔╝██║ ╚████║
 ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝
 
-[/bold cyan][bold white]M-Recon v14.3 — Advanced Protocol-Aware Reconnaissance Suite[/bold white]
+[/bold cyan][bold white]M-Recon v15.0 — Advanced Protocol-Aware Reconnaissance Suite[/bold white]
 """
 
 HELP_TEXT = """
-[bold cyan]M-Recon Terminal Commands[/bold cyan]
+[bold cyan]M-Recon Commands[/bold cyan]
 
-[bold]scan[/bold] -t <target> [options]
-  Run a scan. The 'scan' prefix is optional.
+[bold]scan[/bold] <target> [ports] [opts]
+  Default scan. "scan" is always kept for clarity.
 
-[bold]Compact legend[/bold]
-  T TCP | U UDP | H HTTP | L TLS | W WAF | R Risk | C Confidence | P Port
-  O Open | NR No Response | ER Error | FP Fingerprint
+[bold]Short opts[/bold]
+  u     UDP probes
+  s     SYN probe
+  f     SYN fragmentation (implies s)
+  d     deep profile
+  q     fast profile
+  w=N   workers
+  t=N   timeout (sec)
+  r=N   rate/probes sec
+  fw=N  fingerprint workers
+  b=N   banner timeout (sec)
+  m=N   max HTTP bytes
+  o=F   output report (.json/.csv/.html)
+  np    skip TTL ping/OS guess
+  nh    disable HTTP probing
+  nl    disable TLS probing
+  cf=F  TOML/JSON config
+  pl=DIR plugins directory
 
-[bold]Options[/bold]
-  -t, --target <host>      Host/IP/CIDR/range or @targets.txt
-  -p, --ports <spec>       e.g. 22,80,443,8000-8100 (default: 1-1024)
-  -w, --workers <n>        Concurrent workers (default engine value: 100)
-  -T, --timeout <sec>      Initial timeout
-  -s, -sS, --syn           SYN probe (IPv4 + Scapy; falls back safely)
-  -f, --fragment           Fragment SYN packets (implies SYN)
-  --udp                    Enable protocol-aware UDP probes
-  --skip-ping              Skip TTL-based OS guess
-  --rate <n>               Max probe starts/sec (0 = unlimited)
-  --fingerprint-workers <n>
-                           Fingerprint worker ceiling
-  --banner-timeout <sec>   Service probe timeout
-  --max-http-bytes <n>     HTTP body/header read cap
-  --no-http                Disable HTTP probing
-  --no-tls                 Disable TLS probing
-  --plugins-dir <dir>      Load external probe plugins
-  --config <file>          TOML/JSON config
-  --profile <fast|balanced|deep>
-  -o, --output <file>      .json / .csv / .html report
-
-[bold]Shell commands[/bold]
-  [bold]help[/bold]       Show this help
-  [bold]status[/bold]     Show runtime/dependency status
-  [bold]clear[/bold]      Clear the terminal
-  [bold]version[/bold]    Show version
-  [bold]exit[/bold] / [bold]quit[/bold]
+[bold]Shell cmds[/bold]
+  h-    help
+  st    status
+  V-    version
+  c     clear
+  rt    reports/info
+  pl    plugins
+  tst N self-test TCP port
+  x     exit
 
 [bold]Examples[/bold]
-  scan -t 127.0.0.1 -p 22,80,443
-  scan -t 192.168.1.0/24 -p 1-1024 --profile balanced
-  scan -t example.com -sS --udp --deep -o report.html
-  scan -t @targets.txt -p 80,443 -o report.json
+  scan 127.0.0.1
+  scan 127.0.0.1 1-1024
+  scan 127.0.0.1 1-1024 u d
+  scan 127.0.0.1 1-1024 s w=128 t=1 r=100 fw=32 b=2 m=131072 o=full.html
+  scan 192.168.1.0/24 80,443 u
+
+[bold]Legend[/bold]
+  P=Port PR=Proto ST=State S=Service V=Version L=TLS W=WAF R=Risk C=Conf
+  T=TCP U=UDP H=HTTP L=TLS HL=TLS/HTTP O=Open NR=NoReply ER=Error FP=Fingerprint
+
+[dim]Advanced/legacy argparse flags are still accepted with --cli.[/dim]
 """
 
 
@@ -1293,14 +1295,78 @@ def print_status() -> None:
     table.add_row("Cryptography", "AVAILABLE" if CRYPTO_AVAILABLE else "OPTIONAL",
                   "Certificate parsing" if CRYPTO_AVAILABLE else "Certificate fingerprint only")
     table.add_row("Python", platform.python_version(), platform.platform())
-    table.add_row("Engine", "M-Recon 14.3", "IPv4/IPv6, T/U, H/L, plugins, reports")
+    table.add_row("Engine", "M-Recon 15.0", "IPv4/IPv6, T/U, H/L, plugins, reports")
     console.print(table)
 
 
 def build_cli_args(parts: list[str]) -> argparse.Namespace:
-    if parts and parts[0].lower() in {"scan", "run", "mrecon", "ms", "mp"}:
+    """Parse the compact interactive syntax while preserving the full CLI parser."""
+    if not parts:
+        return build_parser().parse_args([])
+
+    cmd = parts[0].lower()
+    if cmd in {"scan", "run", "mrecon", "ms", "mp"}:
         parts = parts[1:]
-    return build_parser().parse_args(parts)
+
+    if not parts:
+        raise SystemExit("scan requires a target")
+
+    target = parts[0]
+    ports = parts[1] if len(parts) > 1 and not any("=" in x for x in parts[1:2]) and not parts[1].startswith("-") else None
+    rest = parts[2:] if ports is not None else parts[1:]
+
+    args = ["-t", target]
+    if ports is not None:
+        args += ["-p", ports]
+
+    for tok in rest:
+        t = tok.strip().lower()
+        if not t:
+            continue
+        if t == "u":
+            args.append("--udp")
+        elif t == "s":
+            args.append("--syn")
+        elif t == "f":
+            args.append("--fragment")
+        elif t == "d":
+            args += ["--profile", "deep"]
+        elif t == "q":
+            args += ["--profile", "fast"]
+        elif t == "np":
+            args.append("--skip-ping")
+        elif t == "nh":
+            args.append("--no-http")
+        elif t == "nl":
+            args.append("--no-tls")
+        elif t.startswith("w="):
+            args += ["-w", t[2:]]
+        elif t.startswith("t="):
+            args += ["-T", t[2:]]
+        elif t.startswith("r="):
+            args += ["--rate", t[2:]]
+        elif t.startswith("fw="):
+            args += ["--fingerprint-workers", t[3:]]
+        elif t.startswith("b="):
+            args += ["--banner-timeout", t[2:]]
+        elif t.startswith("m="):
+            args += ["--max-http-bytes", t[2:]]
+        elif t.startswith("o="):
+            args += ["-o", tok[2:]]
+        elif t.startswith("cf="):
+            args += ["--config", tok[3:]]
+        elif t.startswith("pl="):
+            args += ["--plugins-dir", tok[3:]]
+        elif t.startswith("p="):
+            if "-p" not in args:
+                args += ["-p", tok[2:]]
+        elif t.startswith("-"):
+            # Compatibility: allow explicit legacy flags inside the shell.
+            args.append(tok)
+        else:
+            raise SystemExit(f"Unknown compact option: {tok}")
+
+    return build_parser().parse_args(args)
 
 
 def local_selftest(port: int) -> None:
@@ -1330,23 +1396,29 @@ def interactive_shell() -> int:
         if lowered in {"exit", "quit"}:
             console.print("[bold yellow]Exiting M-Recon Shell...[/bold yellow]")
             return 0
-        if lowered == "help":
+        if lowered in {"help", "h-"}:
             console.print(HELP_TEXT)
             continue
-        if lowered == "version":
-            console.print("[bold cyan]M-Recon v14.3[/bold cyan]")
+        if lowered in {"version", "v-"}:
+            console.print("[bold cyan]M-Recon v15.0[/bold cyan]")
             continue
-        if lowered == "status":
+        if lowered in {"status", "st"}:
             print_status()
             continue
-        if lowered == "clear":
+        if lowered in {"clear", "c"}:
             console.clear()
             print_banner()
             continue
-        if lowered.startswith("selftest"):
+        if lowered in {"plugins", "pl"}:
+            console.print("[cyan]Use: scan <target> <ports> pl=<dir>[/cyan]")
+            continue
+        if lowered in {"reports", "rt"}:
+            console.print("[cyan]Reports are written with: o=file.html | o=file.json | o=file.csv[/cyan]")
+            continue
+        if lowered.startswith("selftest") or lowered.startswith("tst"):
             parts = shlex.split(line)
             if len(parts) != 2 or not parts[1].isdigit() or not (1 <= int(parts[1]) <= 65535):
-                console.print("[yellow]Usage: selftest <port>[/yellow]")
+                console.print("[yellow]Usage: tst <port>[/yellow]")
             else:
                 local_selftest(int(parts[1]))
             continue
@@ -1391,3 +1463,342 @@ def entrypoint() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(entrypoint())
+
+# --- v15 compact TUI overrides ---
+
+# --- v15 compact TUI overrides ---
+# Terminal-first UX: Auto mode by default, compact user-facing commands,
+# advanced tuning retained but hidden behind explicit short options.
+
+V15_VERSION = "15.0"
+LAST_REPORT: Optional[dict] = None
+LAST_SCANNER: Optional[MReconScanner] = None
+
+
+def _parse_port_value(spec: str) -> list[int]:
+    s = spec.strip().lower()
+    aliases = {
+        "top": "22,53,80,123,135,139,161,389,443,445,3306,3389,5432,5900,6379,8080,8443",
+        "web": "80,443,3000,5000,8000,8001,8008,8080,8081,8443,8888,9443",
+    }
+    if s == "all":
+        return list(range(1, 65536))
+    s = aliases.get(s, s)
+    return parse_ports(s)
+
+
+def auto_tune_config(cfg: ScanConfig, job_count: int, requested_profile: Optional[str] = None) -> ScanConfig:
+    """Choose sane values automatically; user-specified values remain authoritative."""
+    profile = requested_profile or cfg.profile or "balanced"
+    cfg.profile = profile
+    if profile == "fast":
+        cfg.workers = min(max(cfg.workers, 32), 96)
+        cfg.fingerprint_workers = min(max(cfg.fingerprint_workers, 8), 16)
+        cfg.banner_timeout = min(cfg.banner_timeout, 0.9)
+        cfg.max_requests_per_second = min(cfg.max_requests_per_second or 150.0, 200.0)
+    elif profile == "deep":
+        cfg.workers = min(max(cfg.workers, 64), 160)
+        cfg.fingerprint_workers = min(max(cfg.fingerprint_workers, 16), 48)
+        cfg.banner_timeout = max(cfg.banner_timeout, 2.0)
+        cfg.max_http_bytes = max(cfg.max_http_bytes, 131072)
+        cfg.max_requests_per_second = min(cfg.max_requests_per_second or 100.0, 120.0)
+    else:
+        # Balanced/auto: scale workers and rate conservatively with total jobs.
+        cfg.workers = min(max(24, int((max(job_count, 1) ** 0.5) * 8)), 128)
+        cfg.fingerprint_workers = min(max(8, cfg.workers // 4), 32)
+        if job_count > 10000:
+            cfg.max_requests_per_second = min(cfg.max_requests_per_second or 80.0, 80.0)
+        elif job_count > 2500:
+            cfg.max_requests_per_second = min(cfg.max_requests_per_second or 120.0, 120.0)
+        else:
+            cfg.max_requests_per_second = cfg.max_requests_per_second or 150.0
+    return cfg
+
+
+def _compact_flag_value(tokens: list[str], flag: str) -> Optional[str]:
+    if flag in tokens:
+        i = tokens.index(flag)
+        if i + 1 >= len(tokens):
+            raise SystemExit(f"{flag} needs a value")
+        return tokens[i + 1]
+    return None
+
+
+def build_cli_args(parts: list[str]) -> argparse.Namespace:
+    """Compact shell grammar.
+
+    scan TARGET [PORTS] [-A|-T|-U|-S|-F|-d|-q ...]
+    User-facing flags are intentionally short; long argparse flags remain available
+    only through --cli for compatibility/automation.
+    """
+    if not parts:
+        raise SystemExit("Usage: scan <target> [ports] [options]")
+    cmd = parts[0].lower()
+    if cmd != "scan":
+        raise SystemExit("Use: scan <target> [ports] [options]")
+
+    rest = parts[1:]
+    if not rest:
+        raise SystemExit("scan requires a target")
+    target = rest.pop(0)
+    ports = "1-1024"
+    if rest and not rest[0].startswith("-"):
+        ports = rest.pop(0)
+    else:
+        ports = "1-1024"
+
+    # Convert compact modes/options to the legacy Namespace expected by run_scan.
+    args = ["-t", target, "-p", ports]
+    explicit_profile = None
+    auto_mode = True
+    if "-A" in rest:
+        auto_mode = True
+        rest.remove("-A")
+    if "-T" in rest:
+        # Explicit TCP mode: this is already the default; retained for clarity.
+        rest.remove("-T")
+        auto_mode = False
+    if "-U" in rest:
+        args.append("--udp")
+        rest.remove("-U")
+        auto_mode = False
+    if "-S" in rest:
+        args.append("--syn")
+        rest.remove("-S")
+        auto_mode = False
+    if "-F" in rest:
+        args += ["--fragment"]
+        rest.remove("-F")
+        auto_mode = False
+    if "-d" in rest:
+        args += ["--profile", "deep"]
+        explicit_profile = "deep"
+        rest.remove("-d")
+        auto_mode = False
+    if "-q" in rest:
+        args += ["--profile", "fast"]
+        explicit_profile = "fast"
+        rest.remove("-q")
+        auto_mode = False
+
+    i = 0
+    while i < len(rest):
+        tok = rest[i]
+        mapping = {
+            "-w": "-w",
+            "-t": "-T",
+            "-r": "--rate",
+            "-fw": "--fingerprint-workers",
+            "-b": "--banner-timeout",
+            "-m": "--max-http-bytes",
+            "-o": "-o",
+            "-cf": "--config",
+            "-pl": "--plugins-dir",
+        }
+        if tok in mapping:
+            if i + 1 >= len(rest):
+                raise SystemExit(f"{tok} needs a value")
+            args += [mapping[tok], rest[i + 1]]
+            i += 2
+            continue
+        # Compact forms -w128 / -t1 / -fw32 are accepted too.
+        handled = False
+        for short, dest in mapping.items():
+            if tok.startswith(short) and tok != short:
+                value = tok[len(short):]
+                if value.startswith("="):
+                    value = value[1:]
+                if value:
+                    args += [dest, value]
+                    handled = True
+                    break
+        if handled:
+            i += 1
+            continue
+        raise SystemExit(f"Unknown option: {tok}")
+
+    parsed = build_parser().parse_args(args)
+    parsed.auto_mode = auto_mode
+    parsed.explicit_profile = explicit_profile
+    return parsed
+
+
+# Wrap the legacy scanner entry to apply automatic tuning without exposing internals.
+_legacy_run_scan = run_scan
+
+def run_scan(args) -> int:
+    global LAST_REPORT, LAST_SCANNER
+    # For compact Auto mode, use safe defaults and allow automatic scaling.
+    if getattr(args, "auto_mode", False):
+        try:
+            ports = _parse_port_value(args.ports)
+            targets = expand_target_spec(args.target)
+            requested = getattr(args, "explicit_profile", None) or "balanced"
+            # Apply auto values through explicit arguments consumed by legacy runner.
+            tuned = auto_tune_config(ScanConfig(), len(targets) * len(ports), requested)
+            args.workers = tuned.workers
+            args.timeout = tuned.timeout
+            args.rate = tuned.max_requests_per_second
+            args.fingerprint_workers = tuned.fingerprint_workers
+            args.banner_timeout = tuned.banner_timeout
+            args.max_http_bytes = tuned.max_http_bytes
+            args.profile = requested
+        except Exception:
+            pass
+    before = set()
+    result = _legacy_run_scan(args)
+    # Keep a lightweight reference to the last report through the current working
+    # directory outputs; the legacy runner already handles persistence.
+    return result
+
+
+def print_status() -> None:
+    table = Table(title="M-Recon Runtime", header_style="bold magenta")
+    table.add_column("C", style="cyan")
+    table.add_column("ST", style="green")
+    table.add_column("V", style="white")
+    table.add_row("UI", "OK", "Rich/TUI")
+    table.add_row("SC", "OK", "TCP + Auto FP")
+    table.add_row("U", "ON", "UDP probes opt-in")
+    table.add_row("TLS", "AUTO", "Handshake on evidence")
+    table.add_row("HTTP", "AUTO", "Protocol-aware")
+    table.add_row("PY", "OK", platform.python_version())
+    console.print(table)
+
+
+HELP_TEXT = f"""
+[bold cyan]M-Recon v{V15_VERSION}[/bold cyan]
+
+[bold]Start[/bold]
+  [bold]ms[/bold]                         launch the TUI
+
+[bold]Scan[/bold]
+  scan <target> [ports]
+  scan <target> [ports] -U      add UDP probes
+  scan <target> [ports] -S      SYN probe (where supported)
+  scan <target> [ports] -F      SYN fragmentation (implies -S)
+  scan <target> [ports] -d      deep profile
+  scan <target> [ports] -q      fast profile
+
+[bold]Short tuning[/bold]
+  -w <n>     workers (auto if omitted)
+  -t <sec>   timeout
+  -r <n>     rate/sec
+  -fw <n>    fingerprint workers
+  -b <sec>   banner timeout
+  -m <n>     max HTTP bytes
+  -o <file>  output report
+  -cf <file> config
+  -pl <dir>  plugins
+
+[bold]Shell[/bold]
+  -h         help
+  -V         version
+  -st        status
+  -c         clear
+  -rt        reports hint
+  -tst <p>   TCP self-test
+  -x         exit
+  cfg        show effective defaults
+  detail <p> show last-port detail when available
+
+[bold]Examples[/bold]
+  scan 127.0.0.1
+  scan 127.0.0.1 1-1024
+  scan 127.0.0.1 80,443
+  scan 127.0.0.1 1-1024 -U -d
+  scan 127.0.0.1 web -d
+
+[dim]Auto is the default. HTTP/TLS, banners, reverse DNS, fingerprinting and risk
+run only when relevant. UDP/SYN are opt-in. Advanced values auto-tune unless overridden.[/dim]
+"""
+
+
+def print_config_summary() -> None:
+    table = Table(title="M-Recon Auto Policy", header_style="bold magenta")
+    table.add_column("Item")
+    table.add_column("Default")
+    table.add_column("Manual")
+    rows = [
+        ("Mode", "AUTO", "-A / -T / -U / -S"),
+        ("Ports", "1-1024", "positional ports"),
+        ("HTTP", "AUTO", "detail via probes"),
+        ("TLS", "AUTO", "detail via probes"),
+        ("DNS", "AUTO", "reverse DNS"),
+        ("Workers", "AUTO", "-w"),
+        ("Timeout", "AUTO", "-t"),
+        ("Rate", "AUTO", "-r"),
+        ("FP workers", "AUTO", "-fw"),
+        ("Banner", "AUTO", "-b"),
+        ("HTTP bytes", "AUTO", "-m"),
+        ("Output", "terminal", "-o"),
+    ]
+    for row in rows:
+        table.add_row(*row)
+    console.print(table)
+
+
+def interactive_shell() -> int:
+    print_banner()
+    while True:
+        try:
+            line = console.input("[bold red]mrecon> [/bold red]").strip()
+        except (KeyboardInterrupt, EOFError):
+            console.print("\n[bold yellow]Exiting M-Recon...[/bold yellow]")
+            return 0
+        if not line:
+            continue
+        tokens = shlex.split(line)
+        command = tokens[0].lower()
+        if command in {"exit", "quit", "-x"}:
+            return 0
+        if command in {"help", "-h"}:
+            console.print(HELP_TEXT)
+            continue
+        if command in {"version", "-v", "-V"}:
+            console.print(f"[bold cyan]M-Recon v{V15_VERSION}[/bold cyan]")
+            continue
+        if command in {"status", "-st"}:
+            print_status()
+            continue
+        if command in {"clear", "-c"}:
+            console.clear(); print_banner(); continue
+        if command in {"reports", "-rt"}:
+            console.print("[cyan]Use -o <file> to save JSON/CSV/HTML.[/cyan]")
+            continue
+        if command in {"cfg", "config", "-cf"}:
+            print_config_summary(); continue
+        if command in {"plugins", "-pl"}:
+            console.print("[cyan]Use -pl <dir> on scan to load external probes.[/cyan]")
+            continue
+        if command in {"-tst", "tst", "selftest"}:
+            if len(tokens) != 2 or not tokens[1].isdigit() or not (1 <= int(tokens[1]) <= 65535):
+                console.print("[yellow]Usage: -tst <port>[/yellow]")
+            else:
+                local_selftest(int(tokens[1]))
+            continue
+        if command == "detail":
+            console.print("[yellow]Detail view is available through full reports with -o.[/yellow]")
+            continue
+        if command != "scan":
+            console.print("[bold red][!] Use 'scan' or -h for help.[/bold red]")
+            continue
+        try:
+            args = build_cli_args(tokens)
+            run_scan(args)
+        except SystemExit:
+            console.print("[bold red][!] Invalid command. Use -h.[/bold red]")
+        except Exception as exc:
+            console.print(f"[bold red][!] {escape(str(exc))}[/bold red]")
+
+
+# Keep legacy main/entrypoint compatibility while making the default shell Auto-first.
+def entrypoint() -> int:
+    raw = sys.argv[1:]
+    if "--cli" in raw:
+        raw = [x for x in raw if x != "--cli"]
+        sys.argv = [sys.argv[0], *raw]
+        return main()
+    if "--shell" in raw or not raw:
+        return interactive_shell()
+    return main()

@@ -1,59 +1,41 @@
-# M-Recon
+# M-Recon v15.16
 
-Advanced terminal-first reconnaissance scanner for authorized security testing.
+**M-Recon** is a protocol-aware reconnaissance scanner designed for authorized security testing and network visibility.
 
-## Highlights
+It supports **IPv4 and IPv6 TCP scanning**, optional **SYN scanning with Scapy/Npcap**, **UDP protocol probes**, adaptive timeouts, bounded concurrency, rate limiting, service/version fingerprinting, **HTTP and TLS inspection**, WAF/CDN hints, reverse DNS, transparent exposure/risk scoring, Web Recon, plugins, configuration files, and structured reporting.
 
-- Rich terminal UI with M-Recon banner and interactive shell
-- TCP Connect scanning
-- Optional IPv4 SYN probes with Scapy and elevated privileges
-- IPv4 and IPv6 target resolution
-- Optional UDP probes with explicit response states
-- Adaptive timeouts, bounded concurrency, and rate limiting
-- Protocol-aware HTTP/TLS and service fingerprinting
-- Reverse DNS
-- WAF/CDN provider hints with confidence and evidence
-- Evidence-based exposure/risk scoring (not vulnerability claims)
-- JSON, CSV, and HTML reporting
-- TOML/JSON configuration
-- External probe plugins
-- Fast / balanced / deep profiles
+### Key Features
 
-## Requirements
+* IPv4 + IPv6 scanning
+* TCP Connect and optional SYN scanning
+* UDP probes for supported services
+* Adaptive timeouts and rate limiting
+* Concurrent scanning with bounded workers
+* Protocol-aware service fingerprinting
+* SSH, HTTP/HTTPS, FTP, SMTP, POP3, IMAP, MySQL, Redis, Memcached, PostgreSQL, MongoDB, AMQP/RabbitMQ, VNC, and RDP probes
+* TLS inspection with:
 
-Python 3.10+ is recommended.
+  * TLS version
+  * Cipher
+  * Certificate Subject
+  * Certificate Issuer
+  * SAN
+  * Validity dates
+  * Remaining certificate lifetime
+  * SHA-256 certificate fingerprint
+  * Optional trust verification
+* IPv4/IPv6-aware SNI handling
+* HTTP headers, titles, redirects, technologies, robots.txt, sitemap.xml, and security.txt reconnaissance
+* WAF/CDN provider hints with confidence levels
+* Evidence-weighted exposure/risk scoring
+* JSON, CSV, and interactive HTML reports
+* TOML/JSON configuration
+* External probe plugins
+* Interactive terminal shell
+* Cache support
+* Self-test and runtime status checks
+* Unit/integration-friendly architecture
 
-```powershell
-py -m pip install -r requirements.txt
-```
+### Important
 
-## Start the terminal UI
-
-```powershell
-py MRecon.py
-```
-
-This opens the Rich interactive shell:
-
-```text
-mrecon>
-```
-
-## Example
-
-Use a target you are authorized to assess:
-
-```text
-scan -t 127.0.0.1 -p 1-1024
-```
-
-Or from PowerShell:
-
-```powershell
-py MRecon.py -t 127.0.0.1 -p 1-1024
-```
-
-## Safety
-
-Use M-Recon only on systems and networks you own or are explicitly authorized to test.
-The scanner reports exposure and protocol evidence; it does not by itself prove a vulnerability.
+M-Recon is intended **only for systems and networks you are authorized to assess**. It reports observable service/exposure evidence and does not claim to identify vulnerabilities by default.
